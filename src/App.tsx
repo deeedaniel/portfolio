@@ -1418,7 +1418,7 @@ const App = () => {
               <div className="flex flex-col gap-2">
                 <button
                   onClick={isTimerRunning ? pauseTimer : startTimer}
-                  className={`p-1 rounded hover:bg-gray-700 ${
+                  className={`p-1 rounded ${
                     selectedTimerButton === 0 ? " " : ""
                   }`}
                 >
@@ -1448,7 +1448,7 @@ const App = () => {
                 </button>
                 <button
                   onClick={resetTimer}
-                  className={`p-1 rounded hover:bg-gray-700 ${
+                  className={`p-1 rounded  ${
                     selectedTimerButton === 1 ? "" : ""
                   }`}
                 >
@@ -1465,7 +1465,7 @@ const App = () => {
                 </button>
                 <button
                   onClick={() => setExpandWindow("timer")}
-                  className={`p-1 rounded hover:bg-gray-700 ${
+                  className={`p-1 rounded ${
                     selectedTimerButton === 2 ? "" : ""
                   }`}
                 >
