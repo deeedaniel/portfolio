@@ -1094,7 +1094,7 @@ const App = () => {
                         </div>
                       )}
                     </div>
-                    <div className="text-sm text-gray-400">{track.name}</div>
+                    <div className="text-sm text-gray-400 truncate flex-1 min-w-0">{track.name}</div>
                   </div>
                 ))}
               </div>
