@@ -1031,8 +1031,7 @@ const App = () => {
                   />
                   <div>
                     <p className="text-xs lg:text-sm font-medium">
-                      i'm not currently listening to music {"("}or my spotify
-                      api has been rate-limited ˙◠˙{")"}.
+                      loading music...
                     </p>
                     <p className="text-xs text-gray-400">
                       visit my{" "}
@@ -1945,8 +1944,7 @@ const App = () => {
                         />
                         <div>
                           <p className="text-xs lg:text-sm font-medium">
-                            i'm not currently listening to music {"("}or my
-                            spotify api has been rate-limited ˙◠˙{")"}.
+                            loading music...
                           </p>
                           <p className="text-xs text-gray-400">
                             visit my{" "}

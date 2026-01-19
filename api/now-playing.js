@@ -120,6 +120,55 @@ export default async function handler(req, res) {
     }
 
     if (spRes.status === 204) {
+      // Nothing currently playing, fetch recently played track
+      try {
+        const recentlyPlayedRes = await fetch(
+          "https://api.spotify.com/v1/me/player/recently-played?limit=1",
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+
+        if (recentlyPlayedRes.ok) {
+          const recentData = await recentlyPlayedRes.json();
+          
+          if (recentData.items && recentData.items.length > 0) {
+            const lastTrack = recentData.items[0].track;
+            
+            // Get preview URL for the last played track
+            let previewUrl = lastTrack.preview_url;
+            if (!previewUrl && lastTrack.id) {
+              console.log(
+                `Preview URL not in API response, fetching from embed for recently played track ${lastTrack.id}`
+              );
+              previewUrl = await fetchPreviewUrlFromEmbed(lastTrack.id);
+            }
+
+            const recentlyPlayedData = {
+              is_playing: false,
+              recently_played: true,
+              played_at: recentData.items[0].played_at,
+              item: {
+                id: lastTrack.id,
+                name: lastTrack.name,
+                artists: lastTrack.artists.map((a) => a.name),
+                album: lastTrack.album?.name,
+                album_image: lastTrack.album?.images?.[0]?.url,
+                spotify_url: lastTrack.external_urls?.spotify,
+                preview_url: previewUrl,
+              },
+            };
+            
+            cachedNowPlaying = recentlyPlayedData;
+            lastFetched = Date.now();
+            return res.status(200).json(recentlyPlayedData);
+          }
+        }
+      } catch (recentError) {
+        console.error("Error fetching recently played:", recentError);
+      }
+      
+      // Fallback if recently played fetch fails
       const emptyData = { is_playing: false, item: null };
       cachedNowPlaying = emptyData;
       lastFetched = Date.now();

@@ -1,5 +1,7 @@
 export interface NowPlayingData {
   is_playing: boolean;
+  recently_played?: boolean;
+  played_at?: string;
   item: NowPlayingItem | null;
 }
 
