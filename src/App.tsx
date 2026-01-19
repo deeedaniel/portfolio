@@ -1060,7 +1060,7 @@ const App = () => {
                 >
                   Top Tracks
                 </p>
-                {topTracks.tracks.map((track) => (
+                {topTracks.tracks.slice(0, 5).map((track) => (
                   <div key={track.id} className="flex items-center mt-1.5">
                     <div className="relative group mr-4">
                       <img
