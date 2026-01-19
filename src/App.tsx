@@ -1513,20 +1513,22 @@ const App = () => {
                     onClick={() => setExpandWindow("me")}
                   />
                 </p>
-                <div className=" flex mt-6">
+                <div className="flex flex-col gap-5 max-w-2xl mx-auto mt-4 mb-10 px-4">
+
+                <div className="flex mt-6 justify-between">
                   <p
                     className={`text-[4px] ${
                       isDark ? "text-blue-100" : "text-black"
-                    } font-mono whitespace-pre min-w-1/2 text-center`}
-                  >
+                    } font-mono whitespace-pre text-center`}
+                    >
                     {selectedAscii}
                   </p>
-                  <div className="mx-auto  min-w-1/2 mt-2">
+                  <div className="mx-auto mt-2">
                     <p
                       className={`${
                         isDark ? "text-blue-300" : "text-[#75b8eb]"
                       } text-sm lg:text-lg`}
-                    >
+                      >
                       {personalInfo.username}@{personalInfo.computerName}
                     </p>
                     <p className="text-[9px] lg:text-sm mb-2">
@@ -1553,6 +1555,7 @@ const App = () => {
                     </p>
                   </div>
                 </div>
+                      </div>
                 <div className="flex flex-col gap-5 max-w-2xl mx-auto mt-4 mb-10 px-4 ">
                   {personalInfo.aboutMe.map((paragraph, index) => (
                     <p
