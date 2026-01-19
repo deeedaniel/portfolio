@@ -1011,9 +1011,9 @@ const App = () => {
                     </div>
                   )}
                 </div>
-                <div>
-                  <p className="font-bold">{nowPlaying.item.name}</p>
-                  <p className="text-sm text-gray-400">
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold truncate">{nowPlaying.item.name}</p>
+                  <p className="text-sm text-gray-400 truncate">
                     {nowPlaying.item.artists.join(", ")}
                   </p>
                   {/* <p className="text-sm text-gray-500">
@@ -1924,12 +1924,12 @@ const App = () => {
                           </div>
                         )}
                       </div>
-                      <div>
-                        <p className="font-bold">{nowPlaying.item.name}</p>
-                        <p className="text-sm text-gray-400">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold truncate">{nowPlaying.item.name}</p>
+                        <p className="text-sm text-gray-400 truncate">
                           {nowPlaying.item.artists.join(", ")}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 truncate">
                           {nowPlaying.item.album}
                         </p>
                       </div>
@@ -2008,7 +2008,7 @@ const App = () => {
                               </div>
                             )}
                           </div>
-                          <div className="text-sm text-gray-400">
+                          <div className="text-sm text-gray-400 ">
                             {track.name}
                           </div>
                         </div>
