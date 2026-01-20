@@ -121,6 +121,7 @@ export default async function handler(req, res) {
 
     if (spRes.status === 204) {
       // Nothing currently playing, fetch recently played track
+      console.log("Calling recently played")
       try {
         const recentlyPlayedRes = await fetch(
           "https://api.spotify.com/v1/me/player/recently-played?limit=1",
@@ -129,6 +130,7 @@ export default async function handler(req, res) {
           }
         );
 
+        console.log("recentlyPlayedRes", recentlyPlayedRes);
         if (recentlyPlayedRes.ok) {
           const recentData = await recentlyPlayedRes.json();
           
