@@ -38,23 +38,32 @@ export const personalInfo = {
 
 export const experiencesData = [
   {
-    title: "Full-Stack Intern @ TwinMind",
+    title: "Incoming @ Google",
+    window: "Google",
+    date: "Summer 2026",
+    description:
+      "This upcoming Summer I will be joining Google's YouTube Partner Program as a Software Engineer Intern in Mountain View, CA!!",
+    image: "/google.jpg",
+    links: [{ name: "Visit Google", url: "https://google.com" }],
+  },
+  {
+    title: "Full-Stack @ TwinMind",
     window: "TwinMind",
     date: "May-Present, 2025",
     description:
-      "Last summer I interned as a full-stack developer at TwinMind in Menlo Park, CA. TwinMind is a startup that is building an AI audio recorder that transcribes and summarizes important conversations. I built their web-app from the ground up using Next.js. In the web-app users can upload & record audio files, view past recordings, chat with their recordings, generate AI to-do lists, and more.",
+      "Last summer, I interned as a full-stack developer at TwinMind in Menlo Park, CA. TwinMind is a startup that is building an AI audio recorder that transcribes and summarizes important conversations. I built their web-app from the ground up using Next.js. In the web-app users can upload & record audio files, view past recordings, chat with their recordings, generate AI to-do lists, and more.",
     image: "/twinmind_team.jpeg",
-    links: [{ name: "View TwinMind web-app", url: "https://app.twinmind.com" }],
+    links: [{ name: "Visit TwinMind web-app", url: "https://app.twinmind.com" }],
   },
   {
-    title: "Web Dev Intern @ cooledtured",
+    title: "Web-Dev @ cooledtured",
     window: "cooledtured",
     date: "Oct 2024-Apr 2025",
     description:
-      "At cooledtured, an anime toy store, I worked on an engagement page to survey & quiz users about their favorite anime, shows, and movies. This engagement page was built using React and Firebase. I built the authentication system tracking user's progress with role-based access and implemented the UI for the quiz along with a leaderboard system for each quiz. I also created their onboarding documentation for new developers, including written tutorials and videos.",
+      "During my internship at cooledtured, an anime toy store, I worked on an engagement page to survey & quiz users about their favorite anime, shows, and movies. This engagement page was built using React and Firebase. I built the authentication system tracking user's progress with role-based access and implemented the UI for the quiz along with a leaderboard system for each quiz. I also created their onboarding documentation for new developers, including written tutorials and videos.",
     image: "/cooledtured.jpeg",
     links: [
-      { name: "View engagement page", url: "https://cooledtured.com/engage" },
+      { name: "Visit engagement page", url: "https://cooledtured.com/engage" },
     ],
   },
   {
@@ -63,7 +72,7 @@ export const experiencesData = [
     description:
       "This was my first ever Software Engineering internship, which was hosted by the Software and Computer Engineering Society at SJSU. I worked alongside a mentor who guided me through basic full-stack development along with Docker containerization. I worked on a web-app where students can find the best professors for their classes based on ratings from ratemyprofessors.com.",
     image: "/sce.jpg",
-    links: [{ name: "View SCE's page", url: "https://sce.sjsu.edu/" }],
+    links: [{ name: "Visit SCE's page", url: "https://sce.sjsu.edu/" }],
   },
 ];
 
