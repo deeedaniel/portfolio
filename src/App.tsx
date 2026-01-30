@@ -55,6 +55,13 @@ const App = () => {
   const [selectedExperienceLinkIndex, setSelectedExperienceLinkIndex] =
     useState(0); // index of selected link within experience
 
+  const [hoveredExperienceIndex, setHoveredExperienceIndex] = useState<
+    number | null
+  >(null);
+  const [hoveredProjectIndex, setHoveredProjectIndex] = useState<number | null>(
+    null,
+  );
+
   // cli
   const [command, setCommand] = useState("");
   const [lastCommand, setLastCommand] = useState("");
@@ -186,11 +193,18 @@ const App = () => {
         } else {
           // Navigation between experiences (existing code)
           if (e.key === "ArrowUp") {
-            setExperienceIndex((prev) =>
-              prev === 0 ? experiencesData.length - 1 : prev - 1,
-            );
+            setExperienceIndex((prev) => {
+              const newIndex =
+                prev === 0 ? experiencesData.length - 1 : prev - 1;
+              setHoveredExperienceIndex(newIndex);
+              return newIndex;
+            });
           } else if (e.key === "ArrowDown") {
-            setExperienceIndex((prev) => (prev + 1) % experiencesData.length);
+            setExperienceIndex((prev) => {
+              const newIndex = (prev + 1) % experiencesData.length;
+              setHoveredExperienceIndex(newIndex);
+              return newIndex;
+            });
           } else if (e.key === "Enter") {
             setSelectExperience(experiencesData[experienceIndex].title);
             console.log("hello");
@@ -232,11 +246,17 @@ const App = () => {
         } else {
           // Navigation between projects (existing code)
           if (e.key === "ArrowUp") {
-            setProjectIndex((prev) =>
-              prev === 0 ? projectsData.length - 1 : prev - 1,
-            );
+            setProjectIndex((prev) => {
+              const newIndex = prev === 0 ? projectsData.length - 1 : prev - 1;
+              setHoveredProjectIndex(newIndex);
+              return newIndex;
+            });
           } else if (e.key === "ArrowDown") {
-            setProjectIndex((prev) => (prev + 1) % projectsData.length);
+            setProjectIndex((prev) => {
+              const newIndex = (prev + 1) % projectsData.length;
+              setHoveredProjectIndex(newIndex);
+              return newIndex;
+            });
           } else if (e.key === "Enter") {
             setSelectProject(projectsData[projectIndex].title);
             setExpandWindow("projects");
@@ -1319,26 +1339,34 @@ const App = () => {
             />
           </p>
           <div className="my-2 mx-4">
-            {experiencesData.map((experience, index) => (
-              <div
-                key={index}
-                className={`rounded-md text-sm lg:text-base transition-all duration-150 cursor-pointer my-2 lg:my-1 ${
-                  index === experienceIndex
-                    ? `${
-                        isDark ? "text-white" : "text-gray-800"
-                      } font-bold underline`
-                    : `bg-transparent ${
-                        isDark ? "text-blue-300" : "text-[#75b8eb]"
-                      }`
-                }`}
-                onClick={() => {
-                  setExpandWindow("experience");
-                  setSelectExperience(experience.title);
-                }}
-              >
-                {experience.title} {index == experienceIndex ? " ❮" : ""}
-              </div>
-            ))}
+            {experiencesData.map((experience, index) => {
+              const isHovered = hoveredExperienceIndex === index;
+              const isSelected =
+                index === experienceIndex && hoveredExperienceIndex === null;
+              const shouldHighlight = isHovered || isSelected;
+
+              return (
+                <div
+                  key={index}
+                  className={`rounded-md text-sm lg:text-base transition-all duration-150 cursor-pointer my-2 lg:my-1 ${
+                    shouldHighlight
+                      ? `${
+                          isDark ? "text-white" : "text-gray-800"
+                        } font-bold underline`
+                      : `bg-transparent ${
+                          isDark ? "text-blue-300" : "text-[#75b8eb]"
+                        }`
+                  }`}
+                  onMouseEnter={() => setHoveredExperienceIndex(index)}
+                  onClick={() => {
+                    setExpandWindow("experience");
+                    setSelectExperience(experience.title);
+                  }}
+                >
+                  {experience.title} {shouldHighlight ? " ❮" : ""}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -1366,28 +1394,36 @@ const App = () => {
             />
           </p>
           <div className="mt-2 mx-4">
-            {projectsData.map((project, index) => (
-              <div
-                key={index}
-                className={` rounded-md text-sm lg:text-base transition-all duration-150 cursor-pointer my-2 lg:my-1 ${
-                  index === projectIndex
-                    ? `${
-                        isDark ? "text-white" : "text-gray-800"
-                      } font-bold underline`
-                    : `bg-transparent ${
-                        isDark ? "text-blue-300" : "text-[#75b8eb]"
-                      }`
-                }`}
-                onClick={() => {
-                  setExpandWindow("projects");
-                  setProjectIndex(index);
-                  setSelectProject(project.title);
-                }}
-              >
-                {project.title}
-                {index === projectIndex ? " ❮" : ""}
-              </div>
-            ))}
+            {projectsData.map((project, index) => {
+              const isHovered = hoveredProjectIndex === index;
+              const isSelected =
+                index === projectIndex && hoveredProjectIndex === null;
+              const shouldHighlight = isHovered || isSelected;
+
+              return (
+                <div
+                  key={index}
+                  className={` rounded-md text-sm lg:text-base transition-all duration-150 cursor-pointer my-2 lg:my-1 ${
+                    shouldHighlight
+                      ? `${
+                          isDark ? "text-white" : "text-gray-800"
+                        } font-bold underline`
+                      : `bg-transparent ${
+                          isDark ? "text-blue-300" : "text-[#75b8eb]"
+                        }`
+                  }`}
+                  onMouseEnter={() => setHoveredProjectIndex(index)}
+                  onClick={() => {
+                    setExpandWindow("projects");
+                    setProjectIndex(index);
+                    setSelectProject(project.title);
+                  }}
+                >
+                  {project.title}
+                  {shouldHighlight ? " ❮" : ""}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -1713,20 +1749,36 @@ const App = () => {
                       <button className="rounded-full p-1 bg-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                     </p>
                     <div className="mt-2 mx-4">
-                      {experiencesData.map((experience, index) => (
-                        <div
-                          key={index}
-                          className={` rounded-md transition-all duration-150 cursor-pointer ${
-                            index === experienceIndex
-                              ? " text-white font-bold underline"
-                              : "bg-transparent text-blue-300"
-                          }`}
-                          onClick={() => setSelectExperience(experience.title)}
-                        >
-                          {experience.title}{" "}
-                          {index == experienceIndex ? " ❮" : ""}
-                        </div>
-                      ))}
+                      {experiencesData.map((experience, index) => {
+                        const isHovered = hoveredExperienceIndex === index;
+                        const isSelected =
+                          index === experienceIndex &&
+                          hoveredExperienceIndex === null;
+                        const shouldHighlight = isHovered || isSelected;
+
+                        return (
+                          <div
+                            key={index}
+                            className={` rounded-md transition-all duration-150 cursor-pointer ${
+                              shouldHighlight
+                                ? `${
+                                    isDark ? "text-white" : "text-gray-800"
+                                  } font-bold underline`
+                                : `bg-transparent ${
+                                    isDark ? "text-blue-300" : "text-[#75b8eb]"
+                                  }`
+                            }`}
+                            onMouseEnter={() =>
+                              setHoveredExperienceIndex(index)
+                            }
+                            onClick={() =>
+                              setSelectExperience(experience.title)
+                            }
+                          >
+                            {experience.title} {shouldHighlight ? " ❮" : ""}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -1863,20 +1915,33 @@ const App = () => {
                       />
                     </p>
                     <div className="mt-2 mx-4">
-                      {projectsData.map((project, index) => (
-                        <div
-                          key={index}
-                          className={` rounded-md transition-all duration-150 cursor-pointer ${
-                            index === projectIndex
-                              ? " text-white font-bold underline"
-                              : "bg-transparent text-blue-300"
-                          }`}
-                          onClick={() => setSelectProject(project.title)}
-                        >
-                          {project.title}
-                          {index === projectIndex ? " ❮" : ""}
-                        </div>
-                      ))}
+                      {projectsData.map((project, index) => {
+                        const isHovered = hoveredProjectIndex === index;
+                        const isSelected =
+                          index === projectIndex &&
+                          hoveredProjectIndex === null;
+                        const shouldHighlight = isHovered || isSelected;
+
+                        return (
+                          <div
+                            key={index}
+                            className={` rounded-md transition-all duration-150 cursor-pointer ${
+                              shouldHighlight
+                                ? `${
+                                    isDark ? "text-white" : "text-gray-800"
+                                  } font-bold underline`
+                                : `bg-transparent ${
+                                    isDark ? "text-blue-300" : "text-[#75b8eb]"
+                                  }`
+                            }`}
+                            onMouseEnter={() => setHoveredProjectIndex(index)}
+                            onClick={() => setSelectProject(project.title)}
+                          >
+                            {project.title}
+                            {shouldHighlight ? " ❮" : ""}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
