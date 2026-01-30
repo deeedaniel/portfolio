@@ -67,7 +67,7 @@ const App = () => {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerMode, setTimerMode] = useState<"work" | "break" | "longBreak">(
-    "work"
+    "work",
   );
   const [pomodoroCount, setPomodoroCount] = useState(0);
   const [customMinutes, setCustomMinutes] = useState(30);
@@ -79,11 +79,11 @@ const App = () => {
 
   // audio
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
-    null
+    null,
   );
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [currentPreviewUrl, setCurrentPreviewUrl] = useState<string | null>(
-    null
+    null,
   );
 
   // Add this near your other CLI state variables (around line 29)
@@ -152,7 +152,7 @@ const App = () => {
         if (selectExperience) {
           // Navigation within expanded experience (for links)
           const selectedExperienceData = experiencesData.find(
-            (exp) => exp.title === selectExperience
+            (exp) => exp.title === selectExperience,
           );
           if (selectedExperienceData) {
             const totalItems = selectedExperienceData.links.length + 1; // +1 for "back to experiences" button
@@ -160,7 +160,7 @@ const App = () => {
             if (e.key === "ArrowUp") {
               e.preventDefault();
               setSelectedExperienceLinkIndex(
-                (prev) => (prev - 1 + totalItems) % totalItems
+                (prev) => (prev - 1 + totalItems) % totalItems,
               );
             } else if (e.key === "ArrowDown") {
               e.preventDefault();
@@ -174,7 +174,7 @@ const App = () => {
                 // Navigate to selected link
                 window.open(
                   selectedExperienceData.links[selectedExperienceLinkIndex].url,
-                  "_blank"
+                  "_blank",
                 );
               } else {
                 // "back to experiences" button selected
@@ -187,7 +187,7 @@ const App = () => {
           // Navigation between experiences (existing code)
           if (e.key === "ArrowUp") {
             setExperienceIndex((prev) =>
-              prev === 0 ? experiencesData.length - 1 : prev - 1
+              prev === 0 ? experiencesData.length - 1 : prev - 1,
             );
           } else if (e.key === "ArrowDown") {
             setExperienceIndex((prev) => (prev + 1) % experiencesData.length);
@@ -201,7 +201,7 @@ const App = () => {
         if (selectProject) {
           // Navigation within expanded project (for links)
           const selectedProjectData = projectsData.find(
-            (p) => p.title === selectProject
+            (p) => p.title === selectProject,
           );
           if (selectedProjectData) {
             const totalItems = selectedProjectData.links.length + 1; // +1 for "back to projects" button
@@ -209,7 +209,7 @@ const App = () => {
             if (e.key === "ArrowUp") {
               e.preventDefault();
               setSelectedLinkIndex(
-                (prev) => (prev - 1 + totalItems) % totalItems
+                (prev) => (prev - 1 + totalItems) % totalItems,
               );
             } else if (e.key === "ArrowDown") {
               e.preventDefault();
@@ -220,7 +220,7 @@ const App = () => {
                 // Navigate to selected link
                 window.open(
                   selectedProjectData.links[selectedLinkIndex].url,
-                  "_blank"
+                  "_blank",
                 );
               } else {
                 // "back to projects" button selected
@@ -233,7 +233,7 @@ const App = () => {
           // Navigation between projects (existing code)
           if (e.key === "ArrowUp") {
             setProjectIndex((prev) =>
-              prev === 0 ? projectsData.length - 1 : prev - 1
+              prev === 0 ? projectsData.length - 1 : prev - 1,
             );
           } else if (e.key === "ArrowDown") {
             setProjectIndex((prev) => (prev + 1) % projectsData.length);
@@ -274,7 +274,7 @@ const App = () => {
   useEffect(() => {
     if (selectProject) {
       const selectedProjectData = projectsData.find(
-        (p) => p.title === selectProject
+        (p) => p.title === selectProject,
       );
       if (selectedProjectData) {
         // Set to the "back" button index (which is after all links)
@@ -289,7 +289,7 @@ const App = () => {
   useEffect(() => {
     if (selectExperience) {
       const selectedExperienceData = experiencesData.find(
-        (exp) => exp.title === selectExperience
+        (exp) => exp.title === selectExperience,
       );
       if (selectedExperienceData) {
         // Set to the "back" button index (which is after all links)
@@ -506,8 +506,8 @@ const App = () => {
         ? "bg-white text-black"
         : "bg-gray-400 text-black"
       : selected
-      ? "bg-gray-400 text-black"
-      : "bg-gray-200 text-black";
+        ? "bg-gray-400 text-black"
+        : "bg-gray-200 text-black";
 
   const focusInput = () => {
     inputRef.current?.focus();
@@ -587,8 +587,9 @@ const App = () => {
   // Add timer helper functions
   const playNotificationSound = () => {
     // Create audio context for notification sound
-    const audioContext = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
+    const audioContext = new (
+      window.AudioContext || (window as any).webkitAudioContext
+    )();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
@@ -602,7 +603,7 @@ const App = () => {
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(
       0.01,
-      audioContext.currentTime + 0.5
+      audioContext.currentTime + 0.5,
     );
 
     oscillator.start(audioContext.currentTime);
@@ -703,7 +704,7 @@ const App = () => {
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         setCurrentVideoIndex(
-          (prev) => (prev - 1 + videos.length) % videos.length
+          (prev) => (prev - 1 + videos.length) % videos.length,
         );
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
@@ -883,7 +884,7 @@ const App = () => {
         >
           <p
             className={`rounded-t-xl text-sm text-center relative ${headerClass(
-              selectedWindow === "me"
+              selectedWindow === "me",
             )}`}
           >
             me - zsh
@@ -959,7 +960,7 @@ const App = () => {
         >
           <p
             className={`rounded-t-xl text-sm text-center relative ${headerClass(
-              selectedWindow === "music"
+              selectedWindow === "music",
             )}`}
           >
             music - zsh
@@ -1012,7 +1013,14 @@ const App = () => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold truncate">{nowPlaying.item.name}</p>
+                  <a
+                    className="font-bold truncate hover:underline"
+                    href={nowPlaying.item.spotify_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {nowPlaying.item.name}
+                  </a>
                   <p className="text-sm text-gray-400 truncate">
                     {nowPlaying.item.artists.join(", ")}
                   </p>
@@ -1094,7 +1102,14 @@ const App = () => {
                         </div>
                       )}
                     </div>
-                    <div className="text-sm text-gray-400 truncate flex-1 min-w-0">{track.name}</div>
+                    <a
+                      href={track.spotify_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-gray-400 truncate flex-1 min-w-0 hover:underline"
+                    >
+                      {track.name}
+                    </a>
                   </div>
                 ))}
               </div>
@@ -1123,7 +1138,7 @@ const App = () => {
           >
             <p
               className={`rounded-t-xl text-sm text-center relative ${headerClass(
-                selectedWindow === "leetcode"
+                selectedWindow === "leetcode",
               )}`}
             >
               leetcode - zsh
@@ -1205,7 +1220,7 @@ const App = () => {
         >
           <p
             className={`rounded-t-xl text-sm text-center relative top-0 ${headerClass(
-              selectedWindow === "cli"
+              selectedWindow === "cli",
             )}`}
           >
             daniel-code - zsh
@@ -1292,7 +1307,7 @@ const App = () => {
         >
           <p
             className={`rounded-t-xl text-sm text-center relative ${headerClass(
-              selectedWindow === "experience"
+              selectedWindow === "experience",
             )}`}
           >
             experience - zsh
@@ -1339,7 +1354,7 @@ const App = () => {
         >
           <p
             className={`rounded-t-xl text-sm text-center relative ${headerClass(
-              selectedWindow === "projects"
+              selectedWindow === "projects",
             )}`}
           >
             projects - zsh
@@ -1389,7 +1404,7 @@ const App = () => {
           >
             <p
               className={`rounded-t-xl text-sm text-center relative ${headerClass(
-                selectedWindow === "timer"
+                selectedWindow === "timer",
               )}`}
             >
               pomodoro timer - zsh
@@ -1496,7 +1511,7 @@ const App = () => {
               >
                 <p
                   className={`rounded-t-xl text-sm text-center sticky top-0 left-0 right-0 ${headerClass(
-                    true
+                    true,
                   )}`}
                 >
                   me - zsh
@@ -1514,48 +1529,47 @@ const App = () => {
                   />
                 </p>
                 <div className="flex flex-col gap-5 max-w-2xl mx-auto mt-4 mb-10 px-4">
-
-                <div className="flex mt-6 justify-between">
-                  <p
-                    className={`text-[4px] ${
-                      isDark ? "text-blue-100" : "text-black"
-                    } font-mono whitespace-pre text-center`}
-                    >
-                    {selectedAscii}
-                  </p>
-                  <div className="mx-auto mt-2">
+                  <div className="flex mt-6 justify-between">
                     <p
-                      className={`${
-                        isDark ? "text-blue-300" : "text-[#75b8eb]"
-                      } text-sm lg:text-lg`}
+                      className={`text-[4px] ${
+                        isDark ? "text-blue-100" : "text-black"
+                      } font-mono whitespace-pre text-center`}
+                    >
+                      {selectedAscii}
+                    </p>
+                    <div className="mx-auto mt-2">
+                      <p
+                        className={`${
+                          isDark ? "text-blue-300" : "text-[#75b8eb]"
+                        } text-sm lg:text-lg`}
                       >
-                      {personalInfo.username}@{personalInfo.computerName}
-                    </p>
-                    <p className="text-[9px] lg:text-sm mb-2">
-                      {personalInfo.email}
-                    </p>
-                    <p className=" ml-4 text-xs lg:text-sm">
-                      {personalInfo.title}
-                    </p>
-                    <p className=" ml-4 text-xs lg:text-sm">
-                      {personalInfo.education}
-                    </p>
-                    <p className=" ml-4 text-xs lg:text-sm">
-                      Expected Grad: {personalInfo.graduationYear}
-                    </p>
-                    <p className=" ml-4 text-xs lg:text-sm">
-                      {personalInfo.location}
-                    </p>
-                    <p className=" ml-4 text-xs lg:text-sm">
-                      {time.toLocaleTimeString()}
-                    </p>
-                    <p className=" ml-4 mt-2 text-xs hidden lg:block text-gray-400">
-                      <p className="inline-block text-lg">☆</p> try arrows keys
-                      & enter!
-                    </p>
+                        {personalInfo.username}@{personalInfo.computerName}
+                      </p>
+                      <p className="text-[9px] lg:text-sm mb-2">
+                        {personalInfo.email}
+                      </p>
+                      <p className=" ml-4 text-xs lg:text-sm">
+                        {personalInfo.title}
+                      </p>
+                      <p className=" ml-4 text-xs lg:text-sm">
+                        {personalInfo.education}
+                      </p>
+                      <p className=" ml-4 text-xs lg:text-sm">
+                        Expected Grad: {personalInfo.graduationYear}
+                      </p>
+                      <p className=" ml-4 text-xs lg:text-sm">
+                        {personalInfo.location}
+                      </p>
+                      <p className=" ml-4 text-xs lg:text-sm">
+                        {time.toLocaleTimeString()}
+                      </p>
+                      <p className=" ml-4 mt-2 text-xs hidden lg:block text-gray-400">
+                        <p className="inline-block text-lg">☆</p> try arrows
+                        keys & enter!
+                      </p>
+                    </div>
                   </div>
                 </div>
-                      </div>
                 <div className="flex flex-col gap-5 max-w-2xl mx-auto mt-4 mb-10 px-4 ">
                   {personalInfo.aboutMe.map((paragraph, index) => (
                     <p
@@ -1583,7 +1597,7 @@ const App = () => {
                   >
                     <p
                       className={`rounded-t-xl text-sm text-center sticky top-0 ${headerClass(
-                        selectedWindow === "experience"
+                        selectedWindow === "experience",
                       )}`}
                     >
                       {selectExperience}
@@ -1603,7 +1617,7 @@ const App = () => {
                     <div className="m-4">
                       {(() => {
                         const selectedExperienceData = experiencesData.find(
-                          (p) => p.title === selectExperience
+                          (p) => p.title === selectExperience,
                         );
                         if (selectedExperienceData) {
                           return (
@@ -1650,7 +1664,7 @@ const App = () => {
                                         ? "❮ "
                                         : ""}
                                     </a>
-                                  )
+                                  ),
                                 )}
                                 <button
                                   className={`mt-2 rounded self-start transition-all duration-150 ${
@@ -1684,7 +1698,7 @@ const App = () => {
                   >
                     <p
                       className={`rounded-t-xl text-sm text-center relative ${headerClass(
-                        selectedWindow === "experience"
+                        selectedWindow === "experience",
                       )}`}
                     >
                       experience - zsh
@@ -1726,7 +1740,7 @@ const App = () => {
                   >
                     <p
                       className={`rounded-t-xl text-sm text-center sticky top-0 ${headerClass(
-                        selectedWindow === "projects"
+                        selectedWindow === "projects",
                       )}`}
                     >
                       {
@@ -1752,7 +1766,7 @@ const App = () => {
                     <div className="m-4">
                       {(() => {
                         const selectedProjectData = projectsData.find(
-                          (p) => p.title === selectProject
+                          (p) => p.title === selectProject,
                         );
                         if (selectedProjectData) {
                           return (
@@ -1797,7 +1811,7 @@ const App = () => {
                                       {link.name}{" "}
                                       {index === selectedLinkIndex ? "❮ " : ""}
                                     </a>
-                                  )
+                                  ),
                                 )}
                                 <button
                                   className={`mt-2 max-w-2xl self-start rounded transition-all duration-150 ${
@@ -1831,7 +1845,7 @@ const App = () => {
                   >
                     <p
                       className={`rounded-t-xl text-sm text-center relative ${headerClass(
-                        selectedWindow === "projects"
+                        selectedWindow === "projects",
                       )}`}
                     >
                       projects - zsh
@@ -1874,7 +1888,7 @@ const App = () => {
               >
                 <p
                   className={`rounded-t-xl text-sm text-center sticky top-0 ${headerClass(
-                    selectedWindow === "music"
+                    selectedWindow === "music",
                   )}`}
                 >
                   music - zsh
@@ -1928,7 +1942,14 @@ const App = () => {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold truncate">{nowPlaying.item.name}</p>
+                        <a
+                          href={nowPlaying.item.spotify_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold truncate hover:underline"
+                        >
+                          {nowPlaying.item.name}
+                        </a>
                         <p className="text-sm text-gray-400 truncate">
                           {nowPlaying.item.artists.join(", ")}
                         </p>
@@ -2011,9 +2032,14 @@ const App = () => {
                               </div>
                             )}
                           </div>
-                          <div className="text-sm text-gray-400 ">
+                          <a
+                            href={track.spotify_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-gray-400 hover:underline"
+                          >
                             {track.name}
-                          </div>
+                          </a>
                         </div>
                       ))}
                     </div>
@@ -2116,7 +2142,7 @@ const App = () => {
               >
                 <p
                   className={`rounded-t-xl text-sm text-center sticky top-0 ${headerClass(
-                    selectedWindow === "cli"
+                    selectedWindow === "cli",
                   )}`}
                 >
                   daniel-code - zsh
@@ -2197,7 +2223,7 @@ const App = () => {
               >
                 <p
                   className={`rounded-t-xl text-sm text-center sticky top-0 ${headerClass(
-                    selectedWindow === "timer"
+                    selectedWindow === "timer",
                   )}`}
                 >
                   pomodoro timer - zsh
@@ -2354,7 +2380,7 @@ const App = () => {
           >
             <div
               className={`rounded-t-xl text-sm text-center relative ${headerClass(
-                true
+                true,
               )}`}
             >
               {personalInfo.resumeFileName}
@@ -2402,7 +2428,7 @@ const App = () => {
           >
             <div
               className={`rounded-t-xl text-sm text-center relative ${headerClass(
-                true
+                true,
               )}`}
             >
               {videos[currentVideoIndex].title} - Media Player
@@ -2434,7 +2460,7 @@ const App = () => {
                   <button
                     onClick={() =>
                       setCurrentVideoIndex(
-                        (prev) => (prev - 1 + videos.length) % videos.length
+                        (prev) => (prev - 1 + videos.length) % videos.length,
                       )
                     }
                     className={`px-4 py-2 rounded-lg transition-colors ${
