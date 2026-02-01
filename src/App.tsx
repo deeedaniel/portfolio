@@ -526,8 +526,8 @@ const App = () => {
         ? "bg-white text-black"
         : "bg-gray-400 text-black"
       : selected
-        ? "bg-gray-400 text-black"
-        : "bg-gray-200 text-black";
+      ? "bg-gray-400 text-black"
+      : "bg-gray-200 text-black";
 
   const focusInput = () => {
     inputRef.current?.focus();
@@ -607,9 +607,8 @@ const App = () => {
   // Add timer helper functions
   const playNotificationSound = () => {
     // Create audio context for notification sound
-    const audioContext = new (
-      window.AudioContext || (window as any).webkitAudioContext
-    )();
+    const audioContext = new (window.AudioContext ||
+      (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
@@ -1034,7 +1033,7 @@ const App = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <a
-                    className="font-bold truncate hover:underline"
+                    className="font-bold truncate hover:underline block"
                     href={nowPlaying.item.spotify_url}
                     target="_blank"
                     rel="noopener noreferrer"
