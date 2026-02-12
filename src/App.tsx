@@ -413,6 +413,121 @@ const App = () => {
 
   // ask question to Gemini with client-side streaming
   // Replace the existing askQuestion function (lines 276-314)
+  // Helper function to render text with clickable links
+  const renderTextWithLinks = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+
+    const parts: Array<{ type: "text" | "link" | "email"; content: string }> =
+      [];
+    let lastIndex = 0;
+
+    // Find all URLs
+    const matches = [
+      ...Array.from(text.matchAll(urlRegex)).map((m) => ({
+        index: m.index!,
+        length: m[0].length,
+        content: m[0],
+        type: "link" as const,
+      })),
+      ...Array.from(text.matchAll(emailRegex)).map((m) => ({
+        index: m.index!,
+        length: m[0].length,
+        content: m[0],
+        type: "email" as const,
+      })),
+    ].sort((a, b) => a.index - b.index);
+
+    matches.forEach((match) => {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        parts.push({
+          type: "text",
+          content: text.slice(lastIndex, match.index),
+        });
+      }
+
+      // Add the link
+      parts.push({
+        type: match.type,
+        content: match.content,
+      });
+
+      lastIndex = match.index + match.length;
+    });
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push({
+        type: "text",
+        content: text.slice(lastIndex),
+      });
+    }
+
+    return (
+      <>
+        {parts.map((part, index) => {
+          if (part.type === "link") {
+            return (
+              <a
+                key={index}
+                href={part.content}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 underline"
+              >
+                {part.content}
+              </a>
+            );
+          } else if (part.type === "email") {
+            return (
+              <a
+                key={index}
+                href={`mailto:${part.content}`}
+                className="text-blue-400 hover:text-blue-300 underline"
+              >
+                {part.content}
+              </a>
+            );
+          } else {
+            return <span key={index}>{part.content}</span>;
+          }
+        })}
+      </>
+    );
+  };
+
+  // Helper function to stream static responses word by word
+  async function streamStaticResponse(
+    text: string,
+    onChunk: (chunk: string) => void,
+  ) {
+    const words = text.split(" ");
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const chunk = (i === 0 ? "" : " ") + word;
+      onChunk(chunk);
+
+      // Variable delay based on word length and punctuation for natural feel
+      let delay = 25 + Math.random() * 25; // Base 25-50ms
+
+      // Longer pause after punctuation
+      if (word.includes(".") || word.includes("!") || word.includes("?")) {
+        delay += 200 + Math.random() * 100;
+      } else if (word.includes(",") || word.includes(";")) {
+        delay += 100 + Math.random() * 50;
+      }
+
+      // Shorter delay for short words
+      if (word.length <= 2) {
+        delay *= 0.7;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
   async function askQuestion(q: string, onChunk: (chunk: string) => void) {
     // Build the conversation history including the new question
     const messages = [...chatHistory, { role: "user" as const, content: q }];
@@ -465,11 +580,168 @@ const App = () => {
   // handle command input
   const handleCommand = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && command) {
+      const trimmedCommand = command.trim().toLowerCase();
       setLastCommand(command);
       setResponse(""); // Clear previous response
       setCommand("");
 
-      // Stream the response
+      // Handle local commands
+      if (trimmedCommand === "about") {
+        const aboutResponse =
+          "hey, what's up?\n\ni'm daniel nguyen, a 21-year-old vietnamese-american from san jose, california. i'm a computer science student at san jose state university.\n\nright now, i'm a full stack engineer intern at twinmind, and i'm super hyped to be joining google (youtube partner program) for a software engineer internship in summer 2026. i'm all about building intuitive and useful stuff, whether it's web apps or just figuring out cool new tech.\n\ni'd say i'm pretty chill, curious about how things work, and i like to keep things clear and real. always trying to find that balance between work, life, and just growing as a person and an engineer.";
+        await streamStaticResponse(aboutResponse, (chunk: string) => {
+          setResponse((prev) => prev + chunk);
+        });
+        setChatHistory((prev) => [
+          ...prev,
+          { role: "user", content: command },
+          { role: "assistant", content: aboutResponse },
+        ]);
+        return;
+      }
+
+      if (
+        trimmedCommand === "experience" ||
+        trimmedCommand === "exp" ||
+        trimmedCommand === "experiences"
+      ) {
+        const experienceResponse =
+          "for sure, let's break down my experience.\n\n• twinmind (2025–present):\n  • basically, i built their ai audio web app from scratch. that included using next.js, neon postgres, and amplitude.\n  • i also integrated real-time transcription, an ai chat feature, and made sure everything was privacy-focused.\n  • published a react component library with ci/cd pipelines, which was cool. helped get the product to over 5,000 active users.\n\n• cooledtured (2024–2025):\n  • here, i built a bunch of react + firebase engagement pages for an anime toy store—think quizzes, leaderboards, polls.\n  • designed the authentication system and how quiz tracking worked. i also got to collaborate a lot with designers and other developers.\n\n• software & computer engineering society at sjsu (2024):\n  • this was my first software internship, which was a great learning experience.\n  • i worked on full-stack features and containerization with docker for a professor rating app.\n\ni'd say those are my main spots so far.";
+        await streamStaticResponse(experienceResponse, (chunk: string) => {
+          setResponse((prev) => prev + chunk);
+        });
+        setChatHistory((prev) => [
+          ...prev,
+          { role: "user", content: command },
+          { role: "assistant", content: experienceResponse },
+        ]);
+        return;
+      }
+
+      if (trimmedCommand === "projects" || trimmedCommand === "project") {
+        try {
+          const projectsResponse =
+            "oh yeah, projects. i've built a bunch of stuff i'm pretty proud of. it's where i really get to explore new tech and build things that i think are cool or solve a problem.\n\nhere are some of the main ones:\n\n• studybuddy: this one actually won 1st place at sce hacks. it's a full-stack app that sends personalized daily sms reminders using the canvas api, openai, and node-cron. basically helps students stay on top of their assignments.\n\n• vivi: i made this for hackdavis. it's an ai-powered web app that visualizes reading with images. the idea came from a student i tutored who had trouble reading. it uses python, fastapi, react, and dall·e, and even has gaze tracking and real-time speech transcription.\n\n• chillguy.ai: this project got 2nd place at hack for humanity. it's an ai voice bot designed for stress-relief calls. it integrates twilio, eleven labs, and google apis to create a pretty chill conversational experience.\n\n• rememberme: i built this for an nvidia hackathon. it's another ai-powered web app that helps users remember information about people they've met. it uses react, python, flask, deepface, retinaface, and nvidia's nemotron super 49b llm. pretty wild stuff with face recognition and ai.\n\n• officetracker: this was for my cs151 class. it's a javafx desktop app for tracking faculty office hours, built with an mvc architecture. we averaged 100% on every submission, so that felt good.\n\ni'm always trying to build something new and learn along the way, so this list keeps growing, tbh.";
+          await streamStaticResponse(projectsResponse, (chunk: string) => {
+            setResponse((prev) => prev + chunk);
+          });
+          setChatHistory((prev) => [
+            ...prev,
+            { role: "user", content: command },
+            { role: "assistant", content: projectsResponse },
+          ]);
+          return;
+        } catch (error) {
+          console.error("Error displaying projects:", error);
+          setResponse("sorry, something went wrong. try again?");
+        }
+        return;
+      }
+
+      if (trimmedCommand === "skills" || trimmedCommand === "skill") {
+        try {
+          const skillsResponse =
+            "alright, skills. i've picked up quite a bit over the internships and projects.\n\ni'd say my main ones are:\n\n• languages: java, python, javascript/typescript\n• frontend: react, next.js, tailwindcss\n• backend: node.js, express, fastapi, prisma\n• databases: postgresql, supabase, firebase\n• tools & platforms: docker, openai api integrations\n\ni'm always trying to dive deeper into new tech too, but those are my core strengths right now.";
+          await streamStaticResponse(skillsResponse, (chunk: string) => {
+            setResponse((prev) => prev + chunk);
+          });
+          setChatHistory((prev) => [
+            ...prev,
+            { role: "user", content: command },
+            { role: "assistant", content: skillsResponse },
+          ]);
+          return;
+        } catch (error) {
+          console.error("Error displaying skills:", error);
+          setResponse("sorry, something went wrong. try again?");
+        }
+      }
+
+      if (trimmedCommand === "goals" || trimmedCommand === "goal") {
+        try {
+          const goalsResponse =
+            "goals, for sure.\n\ni'd say a big one is just continuing to build impactful products that people actually use and find helpful. that's super motivating for me.\n\ntechnically, i'm always trying to level up my full-stack game, especially with architecting scalable systems. i also want to explore more into areas like distributed systems and maybe even some lower-level stuff in the future.\n\nbeyond tech, it's about maintaining that work-life balance – making sure i'm growing professionally but also staying healthy and keeping up with my interests like running or basketball. just continuous growth, really.";
+          await streamStaticResponse(goalsResponse, (chunk: string) => {
+            setResponse((prev) => prev + chunk);
+          });
+          setChatHistory((prev) => [
+            ...prev,
+            { role: "user", content: command },
+            { role: "assistant", content: goalsResponse },
+          ]);
+          return;
+        } catch (error) {
+          console.error("Error displaying goals:", error);
+          setResponse("sorry, something went wrong. try again?");
+        }
+        return;
+      }
+
+      if (trimmedCommand === "funfact") {
+        try {
+          const funfactResponse =
+            "goals, for sure.\n\ni'd say a big one is just continuing to build impactful products that people actually use and find helpful. that's super motivating for me.\n\ntechnically, i'm always trying to level up my full-stack game, especially with architecting scalable systems. i also want to explore more into areas like distributed systems and maybe even some lower-level stuff in the future.\n\nbeyond tech, it's about maintaining that work-life balance – making sure i'm growing professionally but also staying healthy and keeping up with my interests like running or basketball. just continuous growth, really.";
+
+          await streamStaticResponse(funfactResponse, (chunk: string) => {
+            setResponse((prev) => prev + chunk);
+          });
+          setChatHistory((prev) => [
+            ...prev,
+            { role: "user", content: command },
+            { role: "assistant", content: funfactResponse },
+          ]);
+          return;
+        } catch (error) {
+          console.error("Error displaying funfact:", error);
+          setResponse("sorry, something went wrong. try again?");
+        }
+        return;
+      }
+
+      if (trimmedCommand === "contact") {
+        try {
+          const contactResponse =
+            "sure, you can reach me here:\n\n•  email: nguyendaniel1312@gmail.com\n•  linkedin: https://www.linkedin.com/in/daniel-nguyenn/\n•  github: https://github.com/deeedaniel\n\nfeel free to hit me up whenever.";
+          await streamStaticResponse(contactResponse, (chunk: string) => {
+            setResponse((prev) => prev + chunk);
+          });
+          setChatHistory((prev) => [
+            ...prev,
+            { role: "user", content: command },
+            { role: "assistant", content: contactResponse },
+          ]);
+        } catch (error) {
+          console.error("Error displaying contact:", error);
+          setResponse("sorry, something went wrong. try again?");
+        }
+        return;
+      }
+
+      if (
+        trimmedCommand === "commands" ||
+        trimmedCommand === "command" ||
+        trimmedCommand === "help" ||
+        trimmedCommand === "cmd"
+      ) {
+        try {
+          const commandsResponse =
+            "available commands:\n- about\n- experience\n- projects\n- skills\n- goals\n- funfact\n- contact";
+          await streamStaticResponse(commandsResponse, (chunk: string) => {
+            setResponse((prev) => prev + chunk);
+          });
+          setChatHistory((prev) => [
+            ...prev,
+            { role: "user", content: command },
+            { role: "assistant", content: commandsResponse },
+          ]);
+        } catch (error) {
+          console.error("Error displaying commands:", error);
+          setResponse("sorry, something went wrong. try again?");
+        }
+        return;
+      }
+
+      // Stream the response from AI for all other commands
       try {
         await askQuestion(command, (chunk: string) => {
           setResponse((prev) => prev + chunk);
@@ -526,8 +798,8 @@ const App = () => {
         ? "bg-white text-black"
         : "bg-gray-400 text-black"
       : selected
-      ? "bg-gray-400 text-black"
-      : "bg-gray-200 text-black";
+        ? "bg-gray-400 text-black"
+        : "bg-gray-200 text-black";
 
   const focusInput = () => {
     inputRef.current?.focus();
@@ -607,8 +879,9 @@ const App = () => {
   // Add timer helper functions
   const playNotificationSound = () => {
     // Create audio context for notification sound
-    const audioContext = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
+    const audioContext = new (
+      window.AudioContext || (window as any).webkitAudioContext
+    )();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
@@ -1287,7 +1560,7 @@ const App = () => {
                     isDark ? "text-gray-200" : "text-gray-800"
                   } whitespace-pre-wrap px-4`}
                 >
-                  {response}
+                  {renderTextWithLinks(response)}
                 </p>
               </>
             )}
@@ -2254,7 +2527,7 @@ const App = () => {
                           isDark ? "text-gray-200" : "text-gray-800"
                         } whitespace-pre-wrap`}
                       >
-                        {response}
+                        {renderTextWithLinks(response)}
                       </p>
                     </>
                   )}
