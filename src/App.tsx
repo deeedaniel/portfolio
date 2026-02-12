@@ -413,33 +413,47 @@ const App = () => {
 
   // ask question to Gemini with client-side streaming
   // Replace the existing askQuestion function (lines 276-314)
-  // Helper function to render text with clickable links
+  // Helper function to render text with clickable links and window triggers
   const renderTextWithLinks = (text: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+    // Match patterns like [window:experience:Title Text] for clickable window triggers
+    const windowRegex = /\[window:(experience|projects):([^\]]+)\]/g;
 
-    const parts: Array<{ type: "text" | "link" | "email"; content: string }> =
-      [];
+    const parts: Array<{
+      type: "text" | "link" | "email" | "window";
+      content: string;
+      window?: string;
+    }> = [];
     let lastIndex = 0;
 
-    // Find all URLs
+    // Find all URLs, emails, and window triggers
     const matches = [
       ...Array.from(text.matchAll(urlRegex)).map((m) => ({
         index: m.index!,
         length: m[0].length,
         content: m[0],
         type: "link" as const,
+        window: undefined as string | undefined,
       })),
       ...Array.from(text.matchAll(emailRegex)).map((m) => ({
         index: m.index!,
         length: m[0].length,
         content: m[0],
         type: "email" as const,
+        window: undefined as string | undefined,
+      })),
+      ...Array.from(text.matchAll(windowRegex)).map((m) => ({
+        index: m.index!,
+        length: m[0].length,
+        content: m[2], // The display text
+        window: m[1], // The window name (experience or projects)
+        type: "window" as const,
       })),
     ].sort((a, b) => a.index - b.index);
 
     matches.forEach((match) => {
-      // Add text before the link
+      // Add text before the match
       if (match.index > lastIndex) {
         parts.push({
           type: "text",
@@ -447,10 +461,11 @@ const App = () => {
         });
       }
 
-      // Add the link
+      // Add the match
       parts.push({
         type: match.type,
         content: match.content,
+        window: match.window,
       });
 
       lastIndex = match.index + match.length;
@@ -488,6 +503,26 @@ const App = () => {
               >
                 {part.content}
               </a>
+            );
+          } else if (part.type === "window") {
+            return (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandWindow(part.window!);
+                  setSelectedWindow(part.window!);
+                  // Also select the specific project/experience
+                  if (part.window === "projects") {
+                    setSelectProject(part.content);
+                  } else if (part.window === "experience") {
+                    setSelectExperience(part.content);
+                  }
+                }}
+                className="text-blue-400 hover:text-blue-300 underline cursor-pointer bg-transparent border-none p-0 font-mono"
+              >
+                {part.content}
+              </button>
             );
           } else {
             return <span key={index}>{part.content}</span>;
@@ -605,23 +640,38 @@ const App = () => {
         trimmedCommand === "exp" ||
         trimmedCommand === "experiences"
       ) {
-        const experienceResponse =
-          "for sure, let's break down my experience.\n\n• twinmind (2025–present):\n  • basically, i built their ai audio web app from scratch. that included using next.js, neon postgres, and amplitude.\n  • i also integrated real-time transcription, an ai chat feature, and made sure everything was privacy-focused.\n  • published a react component library with ci/cd pipelines, which was cool. helped get the product to over 5,000 active users.\n\n• cooledtured (2024–2025):\n  • here, i built a bunch of react + firebase engagement pages for an anime toy store—think quizzes, leaderboards, polls.\n  • designed the authentication system and how quiz tracking worked. i also got to collaborate a lot with designers and other developers.\n\n• software & computer engineering society at sjsu (2024):\n  • this was my first software internship, which was a great learning experience.\n  • i worked on full-stack features and containerization with docker for a professor rating app.\n\ni'd say those are my main spots so far.";
-        await streamStaticResponse(experienceResponse, (chunk: string) => {
-          setResponse((prev) => prev + chunk);
-        });
-        setChatHistory((prev) => [
-          ...prev,
-          { role: "user", content: command },
-          { role: "assistant", content: experienceResponse },
-        ]);
+        try {
+          const experienceList = experiencesData
+            .map(
+              (exp) =>
+                `• [window:experience:${exp.title}] (${exp.date})${exp.description ? "\n  " + exp.description.split("\n")[0].substring(0, 100) + "..." : ""}`,
+            )
+            .join("\n\n");
+          const experienceResponse = `here's my experience so far:\n\n${experienceList}\n\nclick any title to see more details!`;
+          await streamStaticResponse(experienceResponse, (chunk: string) => {
+            setResponse((prev) => prev + chunk);
+          });
+          setChatHistory((prev) => [
+            ...prev,
+            { role: "user", content: command },
+            { role: "assistant", content: experienceResponse },
+          ]);
+        } catch (error) {
+          console.error("Error displaying experience:", error);
+          setResponse("sorry, something went wrong. try again?");
+        }
         return;
       }
 
       if (trimmedCommand === "projects" || trimmedCommand === "project") {
         try {
-          const projectsResponse =
-            "oh yeah, projects. i've built a bunch of stuff i'm pretty proud of. it's where i really get to explore new tech and build things that i think are cool or solve a problem.\n\nhere are some of the main ones:\n\n• studybuddy: this one actually won 1st place at sce hacks. it's a full-stack app that sends personalized daily sms reminders using the canvas api, openai, and node-cron. basically helps students stay on top of their assignments.\n\n• vivi: i made this for hackdavis. it's an ai-powered web app that visualizes reading with images. the idea came from a student i tutored who had trouble reading. it uses python, fastapi, react, and dall·e, and even has gaze tracking and real-time speech transcription.\n\n• chillguy.ai: this project got 2nd place at hack for humanity. it's an ai voice bot designed for stress-relief calls. it integrates twilio, eleven labs, and google apis to create a pretty chill conversational experience.\n\n• rememberme: i built this for an nvidia hackathon. it's another ai-powered web app that helps users remember information about people they've met. it uses react, python, flask, deepface, retinaface, and nvidia's nemotron super 49b llm. pretty wild stuff with face recognition and ai.\n\n• officetracker: this was for my cs151 class. it's a javafx desktop app for tracking faculty office hours, built with an mvc architecture. we averaged 100% on every submission, so that felt good.\n\ni'm always trying to build something new and learn along the way, so this list keeps growing, tbh.";
+          const projectsList = projectsData
+            .map(
+              (proj) =>
+                `• [window:projects:${proj.title}] (${proj.date})${proj.description ? "\n  " + proj.description.split("\n")[0].substring(0, 100) + "..." : ""}`,
+            )
+            .join("\n\n");
+          const projectsResponse = `here are my projects:\n\n${projectsList}\n\nclick any title to see more details!`;
           await streamStaticResponse(projectsResponse, (chunk: string) => {
             setResponse((prev) => prev + chunk);
           });
