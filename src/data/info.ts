@@ -332,3 +332,24 @@ export const videos = [
   //   embedUrl: "https://www.youtube.com/embed/-gcgE-FCVIE",
   // },
 ];
+
+// Command Responses - Used in the daniel-code terminal
+export const commandResponses = {
+  about:
+    "hey, what's up?\n\ni'm daniel nguyen, a 21-year-old vietnamese-american from san jose, california. i'm a computer science student at san jose state university.\n\nright now, i'm a full stack engineer intern at twinmind, and i'm super hyped to be joining google (youtube partner program) for a software engineer internship in summer 2026. i'm all about building intuitive and useful stuff, whether it's web apps or just figuring out cool new tech.\n\ni'd say i'm pretty chill, curious about how things work, and i like to keep things clear and real. always trying to find that balance between work, life, and just growing as a person and an engineer.",
+
+  skills:
+    "alright, skills. i've picked up quite a bit over the internships and projects.\n\ni'd say my main ones are:\n\n• languages: java, python, javascript/typescript\n• frontend: react, next.js, tailwindcss\n• backend: node.js, express, fastapi, prisma\n• databases: postgresql, supabase, firebase\n• tools & platforms: docker, openai api integrations\n\ni'm always trying to dive deeper into new tech too, but those are my core strengths right now.",
+
+  goals:
+    "goals, for sure.\n\ni'd say a big one is just continuing to build impactful products that people actually use and find helpful. that's super motivating for me.\n\ntechnically, i'm always trying to level up my full-stack game, especially with architecting scalable systems. i also want to explore more into areas like distributed systems and maybe even some lower-level stuff in the future.\n\nbeyond tech, it's about maintaining that work-life balance – making sure i'm growing professionally but also staying healthy and keeping up with my interests like running or basketball. just continuous growth, really.",
+
+  funfact:
+    "alright, a fun fact.\n\ni actually used to be really into competitive gaming back in high school. i played a lot of valorant and peaked radiant (top 500 in north america). it taught me a lot about teamwork, strategy, and staying calm under pressure.\n\nnowadays, i channel that competitive energy into coding challenges and hackathons instead. still love gaming, but it's more casual now – helps me unwind after a long day of coding.",
+
+  contact:
+    "sure, you can reach me here:\n\n•  email: nguyendaniel1312@gmail.com\n•  linkedin: https://www.linkedin.com/in/daniel-nguyenn/\n•  github: https://github.com/deeedaniel\n\nfeel free to hit me up whenever.",
+
+  commands:
+    "available commands:\n- about\n- experience\n- projects\n- skills\n- goals\n- funfact\n- contact",
+};

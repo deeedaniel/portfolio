@@ -9,6 +9,7 @@ import {
   projectsData,
   asciiList,
   personalInfo,
+  commandResponses,
 } from "./data/info";
 import { Taskbar } from "./components/Taskbar";
 import { HeadphoneOff } from "lucide-react";
@@ -622,15 +623,13 @@ const App = () => {
 
       // Handle local commands
       if (trimmedCommand === "about") {
-        const aboutResponse =
-          "hey, what's up?\n\ni'm daniel nguyen, a 21-year-old vietnamese-american from san jose, california. i'm a computer science student at san jose state university.\n\nright now, i'm a full stack engineer intern at twinmind, and i'm super hyped to be joining google (youtube partner program) for a software engineer internship in summer 2026. i'm all about building intuitive and useful stuff, whether it's web apps or just figuring out cool new tech.\n\ni'd say i'm pretty chill, curious about how things work, and i like to keep things clear and real. always trying to find that balance between work, life, and just growing as a person and an engineer.";
-        await streamStaticResponse(aboutResponse, (chunk: string) => {
+        await streamStaticResponse(commandResponses.about, (chunk: string) => {
           setResponse((prev) => prev + chunk);
         });
         setChatHistory((prev) => [
           ...prev,
           { role: "user", content: command },
-          { role: "assistant", content: aboutResponse },
+          { role: "assistant", content: commandResponses.about },
         ]);
         return;
       }
@@ -690,15 +689,13 @@ const App = () => {
 
       if (trimmedCommand === "skills" || trimmedCommand === "skill") {
         try {
-          const skillsResponse =
-            "alright, skills. i've picked up quite a bit over the internships and projects.\n\ni'd say my main ones are:\n\n• languages: java, python, javascript/typescript\n• frontend: react, next.js, tailwindcss\n• backend: node.js, express, fastapi, prisma\n• databases: postgresql, supabase, firebase\n• tools & platforms: docker, openai api integrations\n\ni'm always trying to dive deeper into new tech too, but those are my core strengths right now.";
-          await streamStaticResponse(skillsResponse, (chunk: string) => {
+          await streamStaticResponse(commandResponses.skills, (chunk: string) => {
             setResponse((prev) => prev + chunk);
           });
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
-            { role: "assistant", content: skillsResponse },
+            { role: "assistant", content: commandResponses.skills },
           ]);
           return;
         } catch (error) {
@@ -709,15 +706,13 @@ const App = () => {
 
       if (trimmedCommand === "goals" || trimmedCommand === "goal") {
         try {
-          const goalsResponse =
-            "goals, for sure.\n\ni'd say a big one is just continuing to build impactful products that people actually use and find helpful. that's super motivating for me.\n\ntechnically, i'm always trying to level up my full-stack game, especially with architecting scalable systems. i also want to explore more into areas like distributed systems and maybe even some lower-level stuff in the future.\n\nbeyond tech, it's about maintaining that work-life balance – making sure i'm growing professionally but also staying healthy and keeping up with my interests like running or basketball. just continuous growth, really.";
-          await streamStaticResponse(goalsResponse, (chunk: string) => {
+          await streamStaticResponse(commandResponses.goals, (chunk: string) => {
             setResponse((prev) => prev + chunk);
           });
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
-            { role: "assistant", content: goalsResponse },
+            { role: "assistant", content: commandResponses.goals },
           ]);
           return;
         } catch (error) {
@@ -729,16 +724,13 @@ const App = () => {
 
       if (trimmedCommand === "funfact") {
         try {
-          const funfactResponse =
-            "goals, for sure.\n\ni'd say a big one is just continuing to build impactful products that people actually use and find helpful. that's super motivating for me.\n\ntechnically, i'm always trying to level up my full-stack game, especially with architecting scalable systems. i also want to explore more into areas like distributed systems and maybe even some lower-level stuff in the future.\n\nbeyond tech, it's about maintaining that work-life balance – making sure i'm growing professionally but also staying healthy and keeping up with my interests like running or basketball. just continuous growth, really.";
-
-          await streamStaticResponse(funfactResponse, (chunk: string) => {
+          await streamStaticResponse(commandResponses.funfact, (chunk: string) => {
             setResponse((prev) => prev + chunk);
           });
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
-            { role: "assistant", content: funfactResponse },
+            { role: "assistant", content: commandResponses.funfact },
           ]);
           return;
         } catch (error) {
@@ -750,15 +742,13 @@ const App = () => {
 
       if (trimmedCommand === "contact") {
         try {
-          const contactResponse =
-            "sure, you can reach me here:\n\n•  email: nguyendaniel1312@gmail.com\n•  linkedin: https://www.linkedin.com/in/daniel-nguyenn/\n•  github: https://github.com/deeedaniel\n\nfeel free to hit me up whenever.";
-          await streamStaticResponse(contactResponse, (chunk: string) => {
+          await streamStaticResponse(commandResponses.contact, (chunk: string) => {
             setResponse((prev) => prev + chunk);
           });
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
-            { role: "assistant", content: contactResponse },
+            { role: "assistant", content: commandResponses.contact },
           ]);
         } catch (error) {
           console.error("Error displaying contact:", error);
@@ -774,15 +764,13 @@ const App = () => {
         trimmedCommand === "cmd"
       ) {
         try {
-          const commandsResponse =
-            "available commands:\n- about\n- experience\n- projects\n- skills\n- goals\n- funfact\n- contact";
-          await streamStaticResponse(commandsResponse, (chunk: string) => {
+          await streamStaticResponse(commandResponses.commands, (chunk: string) => {
             setResponse((prev) => prev + chunk);
           });
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
-            { role: "assistant", content: commandsResponse },
+            { role: "assistant", content: commandResponses.commands },
           ]);
         } catch (error) {
           console.error("Error displaying commands:", error);
