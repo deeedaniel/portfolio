@@ -85,11 +85,13 @@ export default async function handler(req, res) {
     const accessToken = await getValidAccessToken();
 
     const spRes = await fetch(
-      "https://api.spotify.com/v1/me/top/tracks?limit=10&time_range=medium_term",
+      "https://api.spotify.com/v1/me/top/tracks?limit=10&time_range=short_term",
       {
         headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      },
     );
+
+    // console.dir(JSON.parse(await spRes.text()), { depth: null });
 
     // Handle rate limit response
     const rateLimitResult = handleRateLimitResponse(spRes);
@@ -140,7 +142,7 @@ export default async function handler(req, res) {
         let previewUrl = track.preview_url;
         if (!previewUrl && track.id) {
           console.log(
-            `Preview URL not in API response, fetching from embed for track ${track.id}`
+            `Preview URL not in API response, fetching from embed for track ${track.id}`,
           );
           previewUrl = await fetchPreviewUrlFromEmbed(track.id);
         }
@@ -154,7 +156,7 @@ export default async function handler(req, res) {
           spotify_url: track.external_urls.spotify,
           preview_url: previewUrl,
         };
-      })
+      }),
     );
 
     // Step 3: Save to cache
