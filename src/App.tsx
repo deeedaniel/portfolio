@@ -1678,7 +1678,7 @@ const App = () => {
               return (
                 <div
                   key={index}
-                  className={`rounded-md text-sm lg:text-base transition-all duration-150 cursor-pointer my-2 lg:my-1 ${
+                  className={`rounded-md text-sm lg:text-base transition-all duration-150 cursor-pointer my-2 lg:py-0.5 lg:my-0 ${
                     shouldHighlight
                       ? `${
                           isDark ? "text-white" : "text-gray-800"
@@ -1740,7 +1740,7 @@ const App = () => {
               return (
                 <div
                   key={index}
-                  className={` rounded-md text-sm lg:text-base transition-all duration-150 cursor-pointer my-2 lg:my-1 ${
+                  className={` rounded-md text-sm lg:text-base transition-all duration-150 cursor-pointer my-2 lg:py-0.5 lg:my-0 ${
                     shouldHighlight
                       ? `${
                           isDark ? "text-white" : "text-gray-800"
@@ -2103,7 +2103,7 @@ const App = () => {
                         return (
                           <div
                             key={index}
-                            className={` rounded-md transition-all duration-150 cursor-pointer ${
+                            className={` rounded-md transition-all duration-150 cursor-pointer my-2 lg:py-0.5 lg:my-0 ${
                               shouldHighlight
                                 ? `${
                                     isDark ? "text-white" : "text-gray-800"
@@ -2274,7 +2274,7 @@ const App = () => {
                         return (
                           <div
                             key={index}
-                            className={` rounded-md transition-all duration-150 cursor-pointer ${
+                            className={` rounded-md transition-all duration-150 cursor-pointer my-2 lg:py-0.5 lg:my-0 ${
                               shouldHighlight
                                 ? `${
                                     isDark ? "text-white" : "text-gray-800"
