@@ -194,18 +194,21 @@ const App = () => {
         } else {
           // Navigation between experiences (existing code)
           if (e.key === "ArrowUp") {
-            setExperienceIndex((prev) => {
-              const newIndex =
-                prev === 0 ? experiencesData.length - 1 : prev - 1;
-              setHoveredExperienceIndex(newIndex);
-              return newIndex;
-            });
+            const base =
+              hoveredExperienceIndex !== null
+                ? hoveredExperienceIndex
+                : experienceIndex;
+            const newIndex = base === 0 ? experiencesData.length - 1 : base - 1;
+            setExperienceIndex(newIndex);
+            setHoveredExperienceIndex(newIndex);
           } else if (e.key === "ArrowDown") {
-            setExperienceIndex((prev) => {
-              const newIndex = (prev + 1) % experiencesData.length;
-              setHoveredExperienceIndex(newIndex);
-              return newIndex;
-            });
+            const base =
+              hoveredExperienceIndex !== null
+                ? hoveredExperienceIndex
+                : experienceIndex;
+            const newIndex = (base + 1) % experiencesData.length;
+            setExperienceIndex(newIndex);
+            setHoveredExperienceIndex(newIndex);
           } else if (e.key === "Enter") {
             setSelectExperience(experiencesData[experienceIndex].title);
             console.log("hello");
@@ -247,17 +250,17 @@ const App = () => {
         } else {
           // Navigation between projects (existing code)
           if (e.key === "ArrowUp") {
-            setProjectIndex((prev) => {
-              const newIndex = prev === 0 ? projectsData.length - 1 : prev - 1;
-              setHoveredProjectIndex(newIndex);
-              return newIndex;
-            });
+            const base =
+              hoveredProjectIndex !== null ? hoveredProjectIndex : projectIndex;
+            const newIndex = base === 0 ? projectsData.length - 1 : base - 1;
+            setProjectIndex(newIndex);
+            setHoveredProjectIndex(newIndex);
           } else if (e.key === "ArrowDown") {
-            setProjectIndex((prev) => {
-              const newIndex = (prev + 1) % projectsData.length;
-              setHoveredProjectIndex(newIndex);
-              return newIndex;
-            });
+            const base =
+              hoveredProjectIndex !== null ? hoveredProjectIndex : projectIndex;
+            const newIndex = (base + 1) % projectsData.length;
+            setProjectIndex(newIndex);
+            setHoveredProjectIndex(newIndex);
           } else if (e.key === "Enter") {
             setSelectProject(projectsData[projectIndex].title);
             setExpandWindow("projects");
@@ -283,6 +286,8 @@ const App = () => {
     expandWindow,
     experienceIndex,
     projectIndex,
+    hoveredExperienceIndex,
+    hoveredProjectIndex,
     selectProject,
     selectedLinkIndex,
     selectExperience,
@@ -689,9 +694,12 @@ const App = () => {
 
       if (trimmedCommand === "skills" || trimmedCommand === "skill") {
         try {
-          await streamStaticResponse(commandResponses.skills, (chunk: string) => {
-            setResponse((prev) => prev + chunk);
-          });
+          await streamStaticResponse(
+            commandResponses.skills,
+            (chunk: string) => {
+              setResponse((prev) => prev + chunk);
+            },
+          );
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
@@ -706,9 +714,12 @@ const App = () => {
 
       if (trimmedCommand === "goals" || trimmedCommand === "goal") {
         try {
-          await streamStaticResponse(commandResponses.goals, (chunk: string) => {
-            setResponse((prev) => prev + chunk);
-          });
+          await streamStaticResponse(
+            commandResponses.goals,
+            (chunk: string) => {
+              setResponse((prev) => prev + chunk);
+            },
+          );
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
@@ -724,9 +735,12 @@ const App = () => {
 
       if (trimmedCommand === "funfact") {
         try {
-          await streamStaticResponse(commandResponses.funfact, (chunk: string) => {
-            setResponse((prev) => prev + chunk);
-          });
+          await streamStaticResponse(
+            commandResponses.funfact,
+            (chunk: string) => {
+              setResponse((prev) => prev + chunk);
+            },
+          );
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
@@ -742,9 +756,12 @@ const App = () => {
 
       if (trimmedCommand === "contact") {
         try {
-          await streamStaticResponse(commandResponses.contact, (chunk: string) => {
-            setResponse((prev) => prev + chunk);
-          });
+          await streamStaticResponse(
+            commandResponses.contact,
+            (chunk: string) => {
+              setResponse((prev) => prev + chunk);
+            },
+          );
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
@@ -764,9 +781,12 @@ const App = () => {
         trimmedCommand === "cmd"
       ) {
         try {
-          await streamStaticResponse(commandResponses.commands, (chunk: string) => {
-            setResponse((prev) => prev + chunk);
-          });
+          await streamStaticResponse(
+            commandResponses.commands,
+            (chunk: string) => {
+              setResponse((prev) => prev + chunk);
+            },
+          );
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: command },
@@ -1667,7 +1687,14 @@ const App = () => {
                           isDark ? "text-blue-300" : "text-[#75b8eb]"
                         }`
                   }`}
-                  onMouseEnter={() => setHoveredExperienceIndex(index)}
+                  onMouseEnter={() =>
+                    selectedWindow === "experience" &&
+                    setHoveredExperienceIndex(index)
+                  }
+                  onMouseLeave={() =>
+                    selectedWindow === "experience" &&
+                    setHoveredExperienceIndex(null)
+                  }
                   onClick={() => {
                     setExpandWindow("experience");
                     setSelectExperience(experience.title);
@@ -1722,7 +1749,14 @@ const App = () => {
                           isDark ? "text-blue-300" : "text-[#75b8eb]"
                         }`
                   }`}
-                  onMouseEnter={() => setHoveredProjectIndex(index)}
+                  onMouseEnter={() =>
+                    selectedWindow === "projects" &&
+                    setHoveredProjectIndex(index)
+                  }
+                  onMouseLeave={() =>
+                    selectedWindow === "projects" &&
+                    setHoveredProjectIndex(null)
+                  }
                   onClick={() => {
                     setExpandWindow("projects");
                     setProjectIndex(index);
@@ -2079,7 +2113,12 @@ const App = () => {
                                   }`
                             }`}
                             onMouseEnter={() =>
+                              selectedWindow === "experience" &&
                               setHoveredExperienceIndex(index)
+                            }
+                            onMouseLeave={() =>
+                              selectedWindow === "experience" &&
+                              setHoveredExperienceIndex(null)
                             }
                             onClick={() =>
                               setSelectExperience(experience.title)
@@ -2244,7 +2283,14 @@ const App = () => {
                                     isDark ? "text-blue-300" : "text-[#75b8eb]"
                                   }`
                             }`}
-                            onMouseEnter={() => setHoveredProjectIndex(index)}
+                            onMouseEnter={() =>
+                              selectedWindow === "projects" &&
+                              setHoveredProjectIndex(index)
+                            }
+                            onMouseLeave={() =>
+                              selectedWindow === "projects" &&
+                              setHoveredProjectIndex(null)
+                            }
                             onClick={() => setSelectProject(project.title)}
                           >
                             {project.title}
