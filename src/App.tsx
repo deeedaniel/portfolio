@@ -1264,8 +1264,8 @@ const App = () => {
     <div
       className={`${
         isDark
-          ? "bg-black text-white lg:bg-[url('/creation_of_adam.jpeg')]"
-          : "bg-white text-black lg:bg-[url('/creation_of_adam_light.jpg')]"
+          ? "bg-black text-white lg:bg-[url('/creation_of_adam.webp')]"
+          : "bg-white text-black lg:bg-[url('/creation_of_adam_light.webp')]"
       } min-h-screen w-screen flex items-center justify-center py-6 pb-24 lg:py-8 lg:pb-20 bg-fixed bg-cover bg-center overscroll-none`}
     >
       {/* Bento box grid */}
@@ -1591,7 +1591,7 @@ const App = () => {
                     }`}
                   >
                     <img
-                      src="/leetcode_color.png"
+                      src="/leetcode_color.webp"
                       alt="LeetCode Logo"
                       className={`w-16 h-16 rounded-xl p-1 object-contain ${
                         isDark ? "bg-gray-100" : "bg-gray-200"
@@ -2614,7 +2614,7 @@ const App = () => {
                         }`}
                       >
                         <img
-                          src="/leetcode_color.png"
+                          src="/leetcode_color.webp"
                           alt="LeetCode Logo"
                           className={`w-16 h-16 rounded-xl p-1 object-contain ${
                             isDark ? "bg-gray-100" : "bg-gray-200"
