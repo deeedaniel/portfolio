@@ -5,10 +5,6 @@ import {
   handleRateLimitResponse,
 } from "./rate-limit-manager.js";
 
-// Cache variables for the now-playing data
-let cachedNowPlaying = null;
-let lastFetched = 0;
-
 // Fetch preview URL from Spotify embed page (workaround for deprecated preview_url)
 // Source - https://stackoverflow.com/a/79238027
 // Posted by Diego Perez, modified by community. See post 'Timeline' for change history
@@ -52,32 +48,12 @@ async function fetchPreviewUrlFromEmbed(trackId) {
 }
 
 export default async function handler(req, res) {
-  const CACHE_TTL = 1000 * 60 * 1; // 5 minutes
+  // Cache at Vercel's edge CDN — 3 min fresh, serve stale while revalidating for 30s
+  res.setHeader("Cache-Control", "s-maxage=180, stale-while-revalidate=30");
 
-  // Step 1: Serve cached data if it's still fresh
-  const isCacheValid = cachedNowPlaying && Date.now() - lastFetched < CACHE_TTL;
-  if (isCacheValid) {
-    return res.status(200).json({
-      ...cachedNowPlaying,
-      cached: true,
-    });
-  }
-
-  // Step 2: Check if we're rate limited before making any requests
+  // Check if we're rate limited before making any requests
   if (isRateLimited()) {
     const rateLimitInfo = getRateLimitInfo();
-
-    // If we have cached data, serve it with rate limit info
-    if (cachedNowPlaying) {
-      return res.status(200).json({
-        ...cachedNowPlaying,
-        cached: true,
-        warning: `Rate limited. Retry after ${rateLimitInfo.remainingSeconds} seconds.`,
-        rateLimitInfo,
-      });
-    }
-
-    // No cached data available
     return res.status(429).json({
       error: "Rate limited",
       message: `Please wait ${rateLimitInfo.remainingSeconds} seconds before retrying`,
@@ -86,32 +62,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Step 3: Get valid access token (will refresh if needed)
     const accessToken = await getValidAccessToken();
 
-    // Step 4: Fetch currently playing track
     const spRes = await fetch(
       "https://api.spotify.com/v1/me/player/currently-playing",
       {
         headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      },
     );
 
-    // Step 5: Handle rate limit response
     const rateLimitResult = handleRateLimitResponse(spRes);
     if (rateLimitResult.isRateLimited) {
-      // Rate limit detected, serve cached data if available
-      if (cachedNowPlaying) {
-        return res.status(200).json({
-          ...cachedNowPlaying,
-          cached: true,
-          warning: rateLimitResult.message,
-          rateLimitInfo: {
-            retryAfter: rateLimitResult.retryAfterSeconds,
-          },
-        });
-      }
-
       return res.status(429).json({
         error: "Spotify rate limit exceeded",
         message: rateLimitResult.message,
@@ -121,32 +82,31 @@ export default async function handler(req, res) {
 
     if (spRes.status === 204) {
       // Nothing currently playing, fetch recently played track
-      console.log("Calling recently played")
+      console.log("Calling recently played");
       try {
         const recentlyPlayedRes = await fetch(
           "https://api.spotify.com/v1/me/player/recently-played?limit=1",
           {
             headers: { Authorization: `Bearer ${accessToken}` },
-          }
+          },
         );
 
         console.log("recentlyPlayedRes", recentlyPlayedRes);
         if (recentlyPlayedRes.ok) {
           const recentData = await recentlyPlayedRes.json();
-          
+
           if (recentData.items && recentData.items.length > 0) {
             const lastTrack = recentData.items[0].track;
-            
-            // Get preview URL for the last played track
+
             let previewUrl = lastTrack.preview_url;
             if (!previewUrl && lastTrack.id) {
               console.log(
-                `Preview URL not in API response, fetching from embed for recently played track ${lastTrack.id}`
+                `Preview URL not in API response, fetching from embed for recently played track ${lastTrack.id}`,
               );
               previewUrl = await fetchPreviewUrlFromEmbed(lastTrack.id);
             }
 
-            const recentlyPlayedData = {
+            return res.status(200).json({
               is_playing: false,
               recently_played: true,
               played_at: recentData.items[0].played_at,
@@ -159,48 +119,30 @@ export default async function handler(req, res) {
                 spotify_url: lastTrack.external_urls?.spotify,
                 preview_url: previewUrl,
               },
-            };
-            
-            cachedNowPlaying = recentlyPlayedData;
-            lastFetched = Date.now();
-            return res.status(200).json(recentlyPlayedData);
+            });
           }
         }
       } catch (recentError) {
         console.error("Error fetching recently played:", recentError);
       }
-      
-      // Fallback if recently played fetch fails
-      const emptyData = { is_playing: false, item: null };
-      cachedNowPlaying = emptyData;
-      lastFetched = Date.now();
-      return res.status(200).json(emptyData);
+
+      return res.status(200).json({ is_playing: false, item: null });
     }
 
     if (!spRes.ok) {
       const text = await spRes.text();
-      // fallback to cache if Spotify fails
-      if (cachedNowPlaying) {
-        return res.status(200).json({
-          ...cachedNowPlaying,
-          cached: true,
-          warning: "Spotify API error, showing cached data",
-        });
-      }
       return res.status(spRes.status).json({
         error: "Spotify API error",
         details: text,
       });
     }
 
-    // Step 5: Parse successful response
     const now = await spRes.json();
 
-    // Get preview URL - try API first, then fetch from embed page if not available
     let previewUrl = now.item?.preview_url;
     if (!previewUrl && now.item?.id) {
       console.log(
-        `Preview URL not in API response, fetching from embed for track ${now.item.id}`
+        `Preview URL not in API response, fetching from embed for track ${now.item.id}`,
       );
       previewUrl = await fetchPreviewUrlFromEmbed(now.item.id);
     }
@@ -221,23 +163,9 @@ export default async function handler(req, res) {
         : null,
     };
 
-    // Step 6: Cache successful response
-    cachedNowPlaying = simplified;
-    lastFetched = Date.now();
-
-    return res.status(200).json({ ...simplified, cached: false });
+    return res.status(200).json(simplified);
   } catch (error) {
     console.error("Error in now-playing API:", error);
-
-    // Fallback to cached data if available
-    if (cachedNowPlaying) {
-      return res.status(200).json({
-        ...cachedNowPlaying,
-        cached: true,
-        warning: "API error, showing cached data",
-      });
-    }
-
     return res.status(500).json({
       error: "Internal server error",
       details: error.message,
