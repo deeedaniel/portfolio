@@ -53,11 +53,36 @@ const redis = Redis.fromEnv();
 const CACHE_KEY = "spotify:now-playing";
 const CACHE_TTL_SECONDS = 60 * 3; // 3 min
 
+const LOCK_KEY = "spotify:now-playing:lock";
+const LOCK_TTL = 10;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default async function handler(req, res) {
   const cached = await redis.get(CACHE_KEY);
 
   if (cached) {
     return res.status(200).json({ ...cached, cached: true });
+  }
+
+  const lockAcquired = await redis.set(LOCK_KEY, "1", {
+    nx: true,
+    ex: LOCK_TTL,
+  });
+
+  if (!lockAcquired) {
+    for (let i = 0; i < 5; i++) {
+      await sleep(500); // wait 500ms per attempt, 2.5s max
+      const cachedAfterWait = await redis.get(CACHE_KEY);
+      if (cachedAfterWait) {
+        return res.status(200).json({ ...cachedAfterWait, cached: true });
+      }
+    }
+
+    // Wait 2.5s and still no cache, give up
+    return res
+      .status(503)
+      .json({ error: "Service temporarily unavailable, try again" });
   }
 
   try {
@@ -174,7 +199,6 @@ export default async function handler(req, res) {
     };
 
     await redis.set(CACHE_KEY, simplified, { ex: CACHE_TTL_SECONDS });
-
     return res.status(200).json(simplified);
   } catch (error) {
     console.error("Error in now-playing API:", error);
@@ -182,5 +206,9 @@ export default async function handler(req, res) {
       error: "Internal server error",
       details: error.message,
     });
+  } finally {
+    if (lockAcquired) {
+      await redis.del(LOCK_KEY);
+    }
   }
 }

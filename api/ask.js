@@ -1,9 +1,31 @@
 import OpenAI from "openai";
+import { Redis } from "@upstash/redis";
+
+const redis = Redis.fromEnv();
+const LIMIT = 10;
+const WINDOW = 60;
 
 // Replace the existing handler function in ask.js
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).end("Only POST allowed");
+  }
+
+  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  const rateLimitKey = `ratelimit:ask:${ip}`;
+
+  const count = await redis.incr(rateLimitKey);
+
+  if (count === 1) {
+    await redis.expire(rateLimitKey, WINDOW);
+  }
+
+  if (count > LIMIT) {
+    const ttl = await redis.ttl(rateLimitKey);
+    return res.status(429).json({
+      error: "Too many requests",
+      retryAfter: ttl,
+    });
   }
 
   const { messages } = req.body; // Now expecting messages array instead of question
