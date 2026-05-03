@@ -1,60 +1,43 @@
-// Rate limit management for Spotify API
-let rateLimitedUntil = 0;
-let rateLimitRetryAfter = 0;
+import { Redis } from "@upstash/redis";
 
-export function isRateLimited() {
-  return Date.now() < rateLimitedUntil;
+const redis = Redis.fromEnv();
+
+const RATE_LIMIT_KEY = "spotify:rate-limited";
+
+export async function isRateLimited() {
+  const limited = await redis.get(RATE_LIMIT_KEY);
+  return limited !== null;
 }
 
-export function getRateLimitInfo() {
-  if (!isRateLimited()) {
-    return { isLimited: false };
-  }
+export async function getRateLimitInfo() {
+  const limited = await redis.get(RATE_LIMIT_KEY);
+  if (!limited) return { isLimited: false };
 
-  const remainingMs = rateLimitedUntil - Date.now();
+  // redis.ttl() returns remaining seconds on the key
+  const remainingSeconds = await redis.ttl(RATE_LIMIT_KEY);
   return {
     isLimited: true,
-    remainingMs,
-    remainingSeconds: Math.ceil(remainingMs / 1000),
-    retryAfter: rateLimitRetryAfter,
+    remainingSeconds,
+    remainingMs: remainingSeconds * 1000,
   };
 }
 
-export function setRateLimit(retryAfterSeconds) {
-  const retryAfterMs = retryAfterSeconds * 1000;
-  rateLimitedUntil = Date.now() + retryAfterMs;
-  rateLimitRetryAfter = retryAfterSeconds;
-
-  console.log(
-    `Rate limited for ${retryAfterSeconds} seconds until ${new Date(
-      rateLimitedUntil
-    ).toISOString()}`
-  );
+export async function setRateLimit(retryAfterSeconds) {
+  await redis.set(RATE_LIMIT_KEY, "1", { ex: retryAfterSeconds });
+  console.log(`Rate limited for ${retryAfterSeconds} seconds`);
 }
 
-export function clearRateLimit() {
-  rateLimitedUntil = 0;
-  rateLimitRetryAfter = 0;
-  console.log("Rate limit cleared");
-}
-
-export function handleRateLimitResponse(response) {
+export async function handleRateLimitResponse(response) {
   if (response.status === 429) {
-    // Get retry-after from headers (in seconds)
     const retryAfter = response.headers.get("retry-after");
-    const retryAfterSeconds = retryAfter ? parseInt(retryAfter, 10) : 60; // Default to 60 seconds if not provided
+    const retryAfterSeconds = retryAfter ? parseInt(retryAfter, 10) : 60;
 
-    setRateLimit(retryAfterSeconds);
+    await setRateLimit(retryAfterSeconds);
     return {
       isRateLimited: true,
       retryAfterSeconds,
       message: `Rate limited. Retry after ${retryAfterSeconds} seconds.`,
     };
-  }
-
-  // If we get a successful response, clear any existing rate limit
-  if (response.ok) {
-    clearRateLimit();
   }
 
   return { isRateLimited: false };

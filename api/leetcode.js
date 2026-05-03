@@ -1,19 +1,23 @@
-let cachedStats = null;
-let lastFetchTime = 0;
+import { Redis } from "@upstash/redis";
+
+const redis = Redis.fromEnv();
+
+const CACHE_KEY = "leetcode:deeedaniel:stats";
+const CACHE_TTL_SECONDS = 60 * 60;
 
 // LeetCode username - update this in src/data/info.ts
 const username = "deeedaniel";
 
 export default async function handler(req, res) {
-  const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+  const cached = await redis.get(CACHE_KEY);
 
-  if (cachedStats && Date.now() - lastFetchTime < CACHE_TTL) {
-    return res.status(200).json({ ...cachedStats, cached: true });
+  if (cached) {
+    return res.status(200).json({ ...cached, cached: true });
   }
 
   try {
     const response = await fetch(
-      `https://leetcode-stats.tashif.codes/${username}`
+      `https://leetcode-stats.tashif.codes/${username}`,
     );
 
     if (!response.ok) {
@@ -30,8 +34,7 @@ export default async function handler(req, res) {
       submissionCalendar: data.submissionCalendar,
     };
 
-    cachedStats = stats;
-    lastFetchTime = Date.now();
+    await redis.set(CACHE_KEY, stats, { ex: CACHE_TTL_SECONDS });
 
     res.status(200).json({ ...stats, cached: false });
   } catch (error) {
@@ -41,7 +44,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         ...cachedStats,
         cached: true,
-        warning: "API error, showing cached data",
+        warning: "API error, showing internal cached data",
       });
     }
 

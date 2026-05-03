@@ -4,6 +4,7 @@ import {
   getRateLimitInfo,
   handleRateLimitResponse,
 } from "./rate-limit-manager.js";
+import { Redis } from "@upstash/redis";
 
 // Fetch preview URL from Spotify embed page (workaround for deprecated preview_url)
 // Source - https://stackoverflow.com/a/79238027
@@ -44,13 +45,18 @@ async function fetchPreviewUrlFromEmbed(trackId) {
   }
 }
 
+const redis = Redis.fromEnv();
+
 export default async function handler(req, res) {
-  // Cache at Vercel's edge CDN — 24h fresh, serve stale for up to 1h while revalidating
-  res.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=3600");
+  const cached = await redis.get("spotify:top-tracks");
+  if (cached) {
+    return res.status(200).json({ tracks: cached, cached: true });
+  }
 
   // Check if we're rate limited before making any requests
-  if (isRateLimited()) {
-    const rateLimitInfo = getRateLimitInfo();
+  if (await isRateLimited()) {
+    const rateLimitInfo = await getRateLimitInfo();
+
     return res.status(429).json({
       error: "Rate limited",
       message: `Please wait ${rateLimitInfo.remainingSeconds} seconds before retrying`,
@@ -65,10 +71,10 @@ export default async function handler(req, res) {
       "https://api.spotify.com/v1/me/top/tracks?limit=10&time_range=short_term",
       {
         headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      },
     );
 
-    const rateLimitResult = handleRateLimitResponse(spRes);
+    const rateLimitResult = await handleRateLimitResponse(spRes);
     if (rateLimitResult.isRateLimited) {
       return res.status(429).json({
         error: "Spotify rate limit exceeded",
@@ -92,7 +98,7 @@ export default async function handler(req, res) {
         let previewUrl = track.preview_url;
         if (!previewUrl && track.id) {
           console.log(
-            `Preview URL not in API response, fetching from embed for track ${track.id}`
+            `Preview URL not in API response, fetching from embed for track ${track.id}`,
           );
           previewUrl = await fetchPreviewUrlFromEmbed(track.id);
         }
@@ -106,8 +112,10 @@ export default async function handler(req, res) {
           spotify_url: track.external_urls.spotify,
           preview_url: previewUrl,
         };
-      })
+      }),
     );
+
+    await redis.set("spotify:top-tracks", simplified, { ex: 86400 });
 
     return res.status(200).json({ tracks: simplified });
   } catch (error) {

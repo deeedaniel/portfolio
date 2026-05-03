@@ -10,10 +10,10 @@ let tokenExpiresAt = 0;
 
 export async function getValidAccessToken() {
   // Check if we're currently rate limited
-  if (isRateLimited()) {
-    const rateLimitInfo = getRateLimitInfo();
+  if (await isRateLimited()) {
+    const rateLimitInfo = await getRateLimitInfo();
     throw new Error(
-      `Rate limited. Retry after ${rateLimitInfo.remainingSeconds} seconds.`
+      `Rate limited. Retry after ${rateLimitInfo.remainingSeconds} seconds.`,
     );
   }
   // Check if we have a valid cached token
@@ -33,7 +33,7 @@ export async function getValidAccessToken() {
   });
 
   const credentials = Buffer.from(
-    `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+    `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`,
   ).toString("base64");
 
   const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
@@ -46,7 +46,7 @@ export async function getValidAccessToken() {
   });
 
   // Handle rate limiting for token refresh
-  const rateLimitResult = handleRateLimitResponse(tokenRes);
+  const rateLimitResult = await handleRateLimitResponse(tokenRes);
   if (rateLimitResult.isRateLimited) {
     throw new Error(rateLimitResult.message);
   }
@@ -55,7 +55,7 @@ export async function getValidAccessToken() {
 
   if (!tokenData.access_token) {
     throw new Error(
-      `Failed to refresh access token: ${JSON.stringify(tokenData)}`
+      `Failed to refresh access token: ${JSON.stringify(tokenData)}`,
     );
   }
 
@@ -65,7 +65,7 @@ export async function getValidAccessToken() {
   tokenExpiresAt = Date.now() + expiresInMs;
 
   console.log(
-    `New Spotify token cached, expires in ${tokenData.expires_in} seconds`
+    `New Spotify token cached, expires in ${tokenData.expires_in} seconds`,
   );
 
   return cachedAccessToken;

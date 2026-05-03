@@ -4,6 +4,7 @@ import {
   getRateLimitInfo,
   handleRateLimitResponse,
 } from "./rate-limit-manager.js";
+import { Redis } from "@upstash/redis";
 
 // Fetch preview URL from Spotify embed page (workaround for deprecated preview_url)
 // Source - https://stackoverflow.com/a/79238027
@@ -47,21 +48,28 @@ async function fetchPreviewUrlFromEmbed(trackId) {
   }
 }
 
-export default async function handler(req, res) {
-  // Cache at Vercel's edge CDN — 3 min fresh, serve stale while revalidating for 30s
-  res.setHeader("Cache-Control", "s-maxage=180, stale-while-revalidate=30");
+const redis = Redis.fromEnv();
 
-  // Check if we're rate limited before making any requests
-  if (isRateLimited()) {
-    const rateLimitInfo = getRateLimitInfo();
-    return res.status(429).json({
-      error: "Rate limited",
-      message: `Please wait ${rateLimitInfo.remainingSeconds} seconds before retrying`,
-      retryAfter: rateLimitInfo.remainingSeconds,
-    });
+const CACHE_KEY = "spotify:now-playing";
+const CACHE_TTL_SECONDS = 60 * 3; // 3 min
+
+export default async function handler(req, res) {
+  const cached = await redis.get(CACHE_KEY);
+
+  if (cached) {
+    return res.status(200).json({ ...cached, cached: true });
   }
 
   try {
+    if (await isRateLimited()) {
+      const rateLimitInfo = await getRateLimitInfo();
+      return res.status(429).json({
+        error: "Rate limited",
+        message: `Please wait ${rateLimitInfo.remainingSeconds} seconds before retrying`,
+        retryAfter: rateLimitInfo.remainingSeconds,
+      });
+    }
+
     const accessToken = await getValidAccessToken();
 
     const spRes = await fetch(
@@ -71,7 +79,7 @@ export default async function handler(req, res) {
       },
     );
 
-    const rateLimitResult = handleRateLimitResponse(spRes);
+    const rateLimitResult = await handleRateLimitResponse(spRes);
     if (rateLimitResult.isRateLimited) {
       return res.status(429).json({
         error: "Spotify rate limit exceeded",
@@ -106,7 +114,7 @@ export default async function handler(req, res) {
               previewUrl = await fetchPreviewUrlFromEmbed(lastTrack.id);
             }
 
-            return res.status(200).json({
+            const simplified = {
               is_playing: false,
               recently_played: true,
               played_at: recentData.items[0].played_at,
@@ -119,7 +127,9 @@ export default async function handler(req, res) {
                 spotify_url: lastTrack.external_urls?.spotify,
                 preview_url: previewUrl,
               },
-            });
+            };
+
+            return res.status(200).json(simplified);
           }
         }
       } catch (recentError) {
@@ -149,7 +159,7 @@ export default async function handler(req, res) {
 
     const simplified = {
       is_playing: now.is_playing,
-      progress_ms: now.progress_ms,
+      // progress_ms: now.progress_ms,
       item: now.item
         ? {
             id: now.item.id,
@@ -162,6 +172,8 @@ export default async function handler(req, res) {
           }
         : null,
     };
+
+    await redis.set(CACHE_KEY, simplified, { ex: CACHE_TTL_SECONDS });
 
     return res.status(200).json(simplified);
   } catch (error) {
