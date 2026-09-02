@@ -38,22 +38,24 @@ export const personalInfo = {
 
 export const experiencesData = [
   {
-    title: "Incoming @ Google",
+    title: "SWE Intern @ Google",
     window: "Google",
     date: "Summer 2026",
     description:
-      "This upcoming Summer I will be joining Google's YouTube Partner Program as a Software Engineer Intern in Mountain View, CA!!",
-    image: "/google.webp",
+      "This past summer I was a Software Engineer at YouTube! I owned the design and development for a full-stack feature that surfaced information in YouTube's Creator Studio for over 700k creators.",
+    image: "/me_at_google.webp",
     links: [{ name: "Visit Google", url: "https://google.com" }],
   },
   {
     title: "Full-Stack @ TwinMind",
     window: "TwinMind",
-    date: "May-Present, 2025",
+    date: "Summer 2025",
     description:
-      "Last summer, I interned as a full-stack developer at TwinMind in Menlo Park, CA. TwinMind is a startup that is building an AI audio recorder that transcribes and summarizes important conversations. I built their web-app from the ground up using Next.js. In the web-app users can upload & record audio files, view past recordings, chat with their recordings, generate AI to-do lists, and more.",
+      "I interned as a full-stack developer at TwinMind in Menlo Park, CA. TwinMind is a startup that is building an AI audio recorder that transcribes and summarizes important conversations. I built their web-app from the ground up using Next.js. In the web-app users can upload & record audio files, view past recordings, chat with their recordings, generate AI to-do lists, and more.",
     image: "/twinmind_team.webp",
-    links: [{ name: "Visit TwinMind web-app", url: "https://app.twinmind.com" }],
+    links: [
+      { name: "Visit TwinMind web-app", url: "https://app.twinmind.com" },
+    ],
   },
   {
     title: "Web-Dev @ cooledtured",
